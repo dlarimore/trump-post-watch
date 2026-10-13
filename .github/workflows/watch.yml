@@ -36,5 +36,5 @@ jobs:
         run: |
           git config user.name "trump-watch-bot"
           git config user.email "trump-watch-bot@users.noreply.github.com"
-          git add state.json alert_log.csv 2>/dev/null || true
+          for f in state.json alert_log.csv; do if [ -f "$f" ]; then git add "$f"; fi; done
           git diff --cached --quiet || (git commit -m "watch $(date -u +%H:%M)" && git push)
