@@ -1,0 +1,40 @@
+name: Trump post watch
+on:
+  schedule:
+    # every 5 min weekdays 11:00-19:55 UTC  (= 7:00am-3:55pm ET in daylight time, 6:00am-2:55pm ET in winter)
+    - cron: "*/5 11-19 * * 1-5"
+    # every 15 min the rest of the time (nights, weekends)
+    - cron: "*/15 0-10,20-23 * * 1-5"
+    - cron: "*/15 * * * 0,6"
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Send a test push to the phone"
+        type: boolean
+        default: false
+concurrency:
+  group: trump-watch
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check Truth Social and push alerts
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          PHONE_MIN_HEAT: ${{ vars.PHONE_MIN_HEAT || '3' }}
+        run: |
+          if [ "${{ github.event.inputs.test }}" = "true" ]; then python watcher.py --test; else python watcher.py; fi
+      - name: Save state and log
+        run: |
+          git config user.name "trump-watch-bot"
+          git config user.email "trump-watch-bot@users.noreply.github.com"
+          git add state.json alert_log.csv 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "watch $(date -u +%H:%M)" && git push)
