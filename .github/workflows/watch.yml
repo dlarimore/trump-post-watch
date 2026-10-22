@@ -1,11 +1,12 @@
 name: Trump post watch
 on:
   schedule:
-    # every 5 min weekdays 11:00-19:55 UTC  (= 7:00am-3:55pm ET in daylight time, 6:00am-2:55pm ET in winter)
-    - cron: "*/5 11-19 * * 1-5"
+    # every 5 min weekdays 11:03-19:58 UTC  (= 7:03am-3:58pm ET in daylight time, 6:03am-2:58pm ET in winter)
+    # off-peak minutes (:03, :08, :13 ...) on purpose: GitHub delays or drops runs most at :00/:05/:15, when its servers are busiest
+    - cron: "3-58/5 11-19 * * 1-5"
     # every 15 min the rest of the time (nights, weekends)
-    - cron: "*/15 0-10,20-23 * * 1-5"
-    - cron: "*/15 * * * 0,6"
+    - cron: "7-52/15 0-10,20-23 * * 1-5"
+    - cron: "7-52/15 * * * 0,6"
   workflow_dispatch:
     inputs:
       test:
